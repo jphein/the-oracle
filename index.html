@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Oracle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--void);
+            color: var(--text-light);
+            cursor: default;
+            user-select: none;
+        }
+        :root {
+            --void: #06060e;
+            --abyss: #0a0a18;
+            --mystic-deep: #1a0a2e;
+            --mystic-purple: #7b2fbe;
+            --crystal-cyan: #00d4ff;
+            --crystal-blue: #4488ff;
+            --gold: #ffd700;
+            --ancient-gold: #c5a55a;
+            --dark-gold: #8b6914;
+            --parchment: #f0e4c8;
+            --parchment-dark: #c8b890;
+            --ember: #ff6b35;
+            --text-light: #e0d8c8;
+            --text-dim: #7a7060;
+            --text-glow: #d4c8a0;
+            --leather: #3a1f08;
+            --leather-light: #5c3418;
+            --leather-dark: #1e0f04;
+        }
+        #cosmos { position: fixed; inset: 0; z-index: 0; }
+        .ambient-glow {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 50% at 50% 45%, rgba(0, 212, 255, 0.03), transparent),
+                radial-gradient(ellipse 40% 60% at 30% 70%, rgba(123, 47, 190, 0.04), transparent),
+                radial-gradient(ellipse 50% 40% at 70% 30%, rgba(68, 136, 255, 0.03), transparent);
+        }
+        .app {
+            position: relative; z-index: 2; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .oracle-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 700;
+            letter-spacing: 0.35em; color: var(--ancient-gold);
+            text-shadow: 0 0 30px rgba(197,165,90,0.4), 0 0 60px rgba(197,165,90,0.15);
+            padding: 1.2rem 0 0.4rem; text-align: center;
+            animation: titleShimmer 4s ease-in-out infinite;
+        }
+        .oracle-subtitle {
+            font-family: 'Crimson Pro', serif; font-size: 0.8rem;
+            font-style: italic; color: var(--text-dim);
+            letter-spacing: 0.2em; margin-bottom: 0.5rem; text-align: center;
+        }
+        @keyframes titleShimmer {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; text-shadow: 0 0 40px rgba(197,165,90,0.6), 0 0 80px rgba(197,165,90,0.2); }
+        }
+        .oracle-stage {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 0; width: 100%; position: relative;
+        }
+        .crystal-ball-wrapper { position: relative; animation: float 6s ease-in-out infinite; display: flex; flex-direction: column; align-items: center; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .crystal-ball {
+            width: clamp(320px, 48vh, 520px); height: clamp(320px, 48vh, 520px);
+            border-radius: 50%; position: relative;
+            background: radial-gradient(circle at 35% 30%,
+                rgba(80,160,220,0.08), rgba(30,15,60,0.6) 40%,
+                rgba(10,5,25,0.85) 65%, rgba(6,6,14,0.95));
+            box-shadow:
+                0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(0,212,255,0.08),
+                0 0 150px rgba(123,47,190,0.1),
+                inset 0 0 50px rgba(0,180,255,0.06), inset 0 0 100px rgba(80,20,140,0.1);
+            animation: ballPulse 4s ease-in-out infinite; overflow: hidden;
+        }
+        @keyframes ballPulse {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(0,212,255,0.08),
+                    0 0 150px rgba(123,47,190,0.1),
+                    inset 0 0 50px rgba(0,180,255,0.06), inset 0 0 100px rgba(80,20,140,0.1);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(0,212,255,0.22), 0 0 100px rgba(0,212,255,0.12),
+                    0 0 180px rgba(123,47,190,0.15),
+                    inset 0 0 60px rgba(0,180,255,0.1), inset 0 0 120px rgba(80,20,140,0.15);
+            }
+        }
+        .ball-mist { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+        .ball-mist-1 {
+            background:
+                radial-gradient(ellipse 70% 50% at 25% 75%, rgba(123,47,190,0.12), transparent 60%),
+                radial-gradient(ellipse 50% 70% at 75% 25%, rgba(0,180,255,0.08), transparent 60%);
+            animation: mistDrift1 10s ease-in-out infinite;
+        }
+        .ball-mist-2 {
+            background:
+                radial-gradient(ellipse 60% 40% at 60% 60%, rgba(68,40,160,0.1), transparent 55%),
+                radial-gradient(ellipse 40% 60% at 30% 40%, rgba(0,212,255,0.06), transparent 55%);
+            animation: mistDrift2 13s ease-in-out infinite;
+        }
+        @keyframes mistDrift1 {
+            0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.7; }
+            33% { transform: rotate(4deg) scale(1.05); opacity: 0.9; }
+            66% { transform: rotate(-3deg) scale(0.97); opacity: 0.6; }
+        }
+        @keyframes mistDrift2 {
+            0%, 100% { transform: rotate(0deg) scale(1.02); opacity: 0.6; }
+            50% { transform: rotate(-5deg) scale(0.95); opacity: 0.85; }
+        }
+        .ball-reflection {
+            position: absolute; top: 7%; left: 14%; width: 32%; height: 18%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 60%, transparent);
+            border-radius: 50%; transform: rotate(-25deg); pointer-events: none; z-index: 10;
+        }
+        .ball-reflection-2 {
+            position: absolute; top: 12%; left: 18%; width: 18%; height: 8%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.12), transparent 70%);
+            border-radius: 50%; transform: rotate(-20deg); pointer-events: none; z-index: 10;
+        }
+        .ball-ring {
+            position: absolute; inset: -2px; border-radius: 50%;
+            border: 1px solid rgba(0,212,255,0.08); pointer-events: none; z-index: 11;
+        }
+        .chat-area {
+            position: absolute; top: 12%; left: 10%; width: 80%; height: 76%;
+            overflow-y: auto; overflow-x: hidden; z-index: 5; padding: 10px 8px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 90%, transparent 100%);
+        }
+        .chat-area { scrollbar-width: none; }
+        .chat-area::-webkit-scrollbar { display: none; }
+        /* ── Live subtitles ────────────────────────────── */
+        .subtitle-layer {
+            position: absolute; bottom: 8%; left: 8%; width: 84%;
+            z-index: 15; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; transition: opacity 0.2s ease;
+        }
+        .subtitle-layer.active { opacity: 1; }
+        .subtitle-text {
+            font-family: 'Crimson Pro', serif; font-size: 0.95rem;
+            color: rgba(200, 220, 255, 0.95); text-align: center;
+            text-shadow: 0 0 12px rgba(0,180,255,0.5), 0 0 30px rgba(123,47,190,0.3);
+            line-height: 1.4; padding: 6px 14px;
+            background: radial-gradient(ellipse at center, rgba(10,5,25,0.7) 0%, transparent 80%);
+            border-radius: 8px; max-width: 90%;
+            animation: subtitleBreath 3s ease-in-out infinite;
+        }
+        @keyframes subtitleBreath {
+            0%, 100% { text-shadow: 0 0 12px rgba(0,180,255,0.5), 0 0 30px rgba(123,47,190,0.3); }
+            50% { text-shadow: 0 0 18px rgba(0,212,255,0.7), 0 0 40px rgba(123,47,190,0.5), 0 0 60px rgba(197,165,90,0.15); }
+        }
+        .subtitle-waves {
+            display: flex; align-items: center; gap: 3px; height: 20px; margin-bottom: 4px;
+        }
+        .subtitle-waves span {
+            width: 2.5px; background: var(--crystal-cyan); border-radius: 2px;
+            animation: waveBar 1.2s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(0,212,255,0.4);
+        }
+        .subtitle-waves span:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .subtitle-waves span:nth-child(2) { height: 10px; animation-delay: 0.1s; }
+        .subtitle-waves span:nth-child(3) { height: 14px; animation-delay: 0.2s; }
+        .subtitle-waves span:nth-child(4) { height: 10px; animation-delay: 0.3s; }
+        .subtitle-waves span:nth-child(5) { height: 6px; animation-delay: 0.4s; }
+        .subtitle-waves span:nth-child(6) { height: 12px; animation-delay: 0.15s; }
+        .subtitle-waves span:nth-child(7) { height: 8px; animation-delay: 0.35s; }
+        @keyframes waveBar {
+            0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+        .subtitle-char {
+            display: inline-block; opacity: 0;
+            animation: charMaterialize 0.2s ease-out forwards;
+        }
+        @keyframes charMaterialize {
+            0% { opacity: 0; transform: translateY(4px); filter: blur(4px); }
+            60% { opacity: 1; filter: blur(1px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        .subtitle-shimmer {
+            background: linear-gradient(90deg,
+                rgba(200,220,255,0.95) 0%, rgba(0,212,255,1) 40%,
+                rgba(197,165,90,1) 60%, rgba(200,220,255,0.95) 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmerSlide 2s ease-in-out forwards;
+        }
+        @keyframes shimmerSlide {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        .message { margin-bottom: 12px; animation: messageAppear 0.6s ease-out forwards; opacity: 0; }
+        @keyframes messageAppear {
+            0% { opacity: 0; transform: translateY(10px) scale(0.97); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        .message-label {
+            font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            margin-bottom: 3px; display: flex; align-items: center; gap: 5px;
+        }
+        .message-label .dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+        .message-user .message-label { color: var(--ancient-gold); justify-content: flex-end; }
+        .message-user .message-label .dot { background: var(--ancient-gold); box-shadow: 0 0 6px var(--ancient-gold); }
+        .message-user .message-bubble {
+            background: linear-gradient(135deg, rgba(197,165,90,0.1), rgba(139,105,20,0.06));
+            border: 1px solid rgba(197,165,90,0.15); border-radius: 12px 12px 4px 12px; margin-left: 15%; text-align: right;
+        }
+        .message-ai .message-label { color: var(--crystal-cyan); }
+        .message-ai .message-label .dot { background: var(--crystal-cyan); box-shadow: 0 0 6px var(--crystal-cyan); }
+        .message-ai .message-bubble {
+            background: linear-gradient(135deg, rgba(0,180,255,0.06), rgba(80,20,140,0.06));
+            border: 1px solid rgba(0,212,255,0.1); border-radius: 12px 12px 12px 4px; margin-right: 10%;
+        }
+        .message-bubble {
+            padding: 8px 12px; font-size: 0.85rem; line-height: 1.5;
+            color: var(--text-light); word-wrap: break-word;
+        }
+        .message-bubble code {
+            font-family: 'Courier New', monospace; font-size: 0.78rem;
+            background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px; color: var(--crystal-cyan);
+        }
+        .message-bubble pre {
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px; padding: 8px; margin: 6px 0; overflow-x: auto; font-size: 0.75rem;
+        }
+        .message-bubble pre code { background: none; padding: 0; }
+        .message-system { text-align: center; }
+        .message-system .message-bubble {
+            background: none; border: none; font-style: italic;
+            color: var(--text-dim); font-size: 0.78rem; margin: 0 auto;
+        }
+        .thinking { display: flex; gap: 4px; padding: 8px 14px; justify-content: center; }
+        .thinking span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--crystal-cyan); opacity: 0.4;
+            animation: thinkPulse 1.4s ease-in-out infinite;
+        }
+        .thinking span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes thinkPulse {
+            0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1.1); }
+        }
+        .ball-stand { width: clamp(150px, 20vh, 200px); height: 30px; margin: -12px auto 0; position: relative; z-index: 3; }
+        .stand-top {
+            width: 100%; height: 12px;
+            background: linear-gradient(to bottom, #c5a55a, #8b6914);
+            border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .stand-base {
+            width: 75%; height: 10px; margin: 0 auto;
+            background: linear-gradient(to bottom, #5c3a1e, #3a1f08);
+            border-radius: 0 0 50% 50% / 0 0 100% 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .incantation-bar {
+            width: 100%; max-width: 700px; padding: 0.8rem 1.5rem 1.2rem;
+            display: flex; align-items: flex-end; gap: 10px; z-index: 20;
+        }
+        .input-scroll {
+            flex: 1; position: relative;
+            background: linear-gradient(135deg, rgba(30,20,10,0.6), rgba(50,35,15,0.4));
+            border: 1px solid rgba(197,165,90,0.18); border-radius: 16px; padding: 2px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(197,165,90,0.06);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-scroll:focus-within {
+            border-color: rgba(197,165,90,0.35);
+            box-shadow: 0 2px 25px rgba(0,0,0,0.3), 0 0 30px rgba(197,165,90,0.06), inset 0 1px 0 rgba(197,165,90,0.1);
+        }
+        .input-scroll textarea {
+            width: 100%; background: none; border: none; outline: none;
+            color: var(--text-glow); font-family: 'Crimson Pro', serif;
+            font-size: 0.95rem; padding: 10px 14px; resize: none;
+            min-height: 20px; max-height: 120px; line-height: 1.4;
+            scrollbar-width: none;
+        }
+        .input-scroll textarea::-webkit-scrollbar { display: none; }
+        .input-scroll textarea::placeholder { color: var(--text-dim); font-style: italic; }
+        .cast-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 1px solid rgba(197,165,90,0.3);
+            background: linear-gradient(135deg, rgba(197,165,90,0.15), rgba(139,105,20,0.1));
+            color: var(--ancient-gold); font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s; flex-shrink: 0; position: relative; overflow: hidden;
+        }
+        .cast-btn:hover {
+            background: linear-gradient(135deg, rgba(197,165,90,0.25), rgba(139,105,20,0.2));
+            border-color: rgba(197,165,90,0.5); box-shadow: 0 0 20px rgba(197,165,90,0.15); transform: scale(1.05);
+        }
+        .cast-btn:active { transform: scale(0.95); }
+        .cast-btn svg { width: 20px; height: 20px; }
+        /* ── Voice-reactive crystal ball ─────────────── */
+        .crystal-ball.voice-active {
+            animation: none;
+            transition: box-shadow 0.12s ease-out;
+        }
+        .crystal-ball.voice-listen {
+            box-shadow:
+                0 0 calc(40px + var(--vu, 0) * 60px) rgba(0,212,255, calc(0.15 + var(--vu, 0) * 0.45)),
+                0 0 calc(80px + var(--vu, 0) * 100px) rgba(0,212,255, calc(0.08 + var(--vu, 0) * 0.2)),
+                0 0 calc(150px + var(--vu, 0) * 80px) rgba(123,47,190, calc(0.1 + var(--vu, 0) * 0.15)),
+                inset 0 0 calc(50px + var(--vu, 0) * 30px) rgba(0,180,255, calc(0.06 + var(--vu, 0) * 0.2)),
+                inset 0 0 100px rgba(80,20,140, calc(0.1 + var(--vu, 0) * 0.1));
+        }
+        .crystal-ball.voice-speak {
+            box-shadow:
+                0 0 calc(40px + var(--vu, 0) * 60px) rgba(197,165,90, calc(0.15 + var(--vu, 0) * 0.4)),
+                0 0 calc(80px + var(--vu, 0) * 100px) rgba(255,180,50, calc(0.08 + var(--vu, 0) * 0.2)),
+                0 0 calc(150px + var(--vu, 0) * 80px) rgba(123,47,190, calc(0.1 + var(--vu, 0) * 0.12)),
+                inset 0 0 calc(50px + var(--vu, 0) * 30px) rgba(197,165,90, calc(0.06 + var(--vu, 0) * 0.18)),
+                inset 0 0 100px rgba(139,105,20, calc(0.1 + var(--vu, 0) * 0.1));
+        }
+
+        /* ── Voice orbs cluster ─────────────────────────── */
+        .voice-cluster {
+            position: relative; flex-shrink: 0;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .voice-orb, .voice-action {
+            width: 44px; height: 44px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; flex-shrink: 0;
+        }
+        .voice-orb {
+            border: 1px solid rgba(123,47,190,0.3);
+            background: linear-gradient(135deg, rgba(123,47,190,0.12), rgba(80,20,140,0.08));
+            color: var(--mystic-purple); font-size: 1rem;
+        }
+        .voice-orb:hover { border-color: rgba(123,47,190,0.5); box-shadow: 0 0 20px rgba(123,47,190,0.15); transform: scale(1.05); }
+        .voice-orb.recording {
+            border-color: rgba(0,212,255,0.6);
+            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,140,200,0.08));
+            animation: recordPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,212,255,0.2); }
+            50% { box-shadow: 0 0 25px rgba(0,212,255,0.45); }
+        }
+        .voice-orb svg { width: 18px; height: 18px; }
+
+        .voice-action {
+            width: 36px; height: 36px;
+            border: 1px solid rgba(197,165,90,0.2);
+            background: linear-gradient(135deg, rgba(20,12,6,0.7), rgba(35,22,10,0.5));
+            color: var(--ancient-gold); font-size: 0.7rem;
+            font-family: 'Cinzel', serif; font-weight: 600;
+            letter-spacing: 0.04em; text-transform: uppercase;
+            opacity: 0.6;
+        }
+        .voice-action:hover {
+            opacity: 1; border-color: rgba(197,165,90,0.5);
+            box-shadow: 0 0 15px rgba(197,165,90,0.15); transform: scale(1.08);
+        }
+        .voice-action:active { transform: scale(0.94); }
+        .voice-action.active {
+            opacity: 1;
+            border-color: rgba(197,165,90,0.6);
+            animation: actionPulse 2s ease-in-out infinite;
+        }
+        /* Speak button — warm gold */
+        .voice-action.speak-btn {
+            border-color: rgba(197,165,90,0.25);
+        }
+        .voice-action.speak-btn:hover, .voice-action.speak-btn.active {
+            box-shadow: 0 0 18px rgba(197,165,90,0.2);
+        }
+        /* Converse button — mystic cyan */
+        .voice-action.converse-btn {
+            border-color: rgba(0,212,255,0.2);
+            color: var(--crystal-cyan);
+            background: linear-gradient(135deg, rgba(0,20,30,0.7), rgba(0,40,60,0.4));
+        }
+        .voice-action.converse-btn:hover, .voice-action.converse-btn.active {
+            border-color: rgba(0,212,255,0.5);
+            box-shadow: 0 0 18px rgba(0,212,255,0.2);
+        }
+        /* Talk button — dual glow */
+        .voice-action.talk-btn {
+            border-color: rgba(123,47,190,0.25);
+            color: var(--mystic-purple);
+            background: linear-gradient(135deg, rgba(30,10,50,0.7), rgba(50,15,80,0.4));
+        }
+        .voice-action.talk-btn:hover, .voice-action.talk-btn.active {
+            border-color: rgba(123,47,190,0.5);
+            box-shadow: 0 0 12px rgba(123,47,190,0.2), 0 0 20px rgba(197,165,90,0.1);
+        }
+        @keyframes actionPulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(197,165,90,0.15); }
+            50% { box-shadow: 0 0 22px rgba(197,165,90,0.35); }
+        }
+        .voice-action svg { width: 15px; height: 15px; }
+        .spellbook-toggle {
+            position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+            z-index: 100; cursor: pointer; animation: bookFloat 5s ease-in-out infinite;
+            transition: opacity 0.3s;
+        }
+        .spellbook-toggle:hover { filter: brightness(1.2); }
+        .spellbook-toggle.hidden { opacity: 0; pointer-events: none; }
+        @keyframes bookFloat {
+            0%, 100% { transform: translateY(-50%) rotate(-1deg); }
+            33% { transform: translateY(calc(-50% - 6px)) rotate(0.5deg); }
+            66% { transform: translateY(calc(-50% + 3px)) rotate(-0.5deg); }
+        }
+        .book-icon {
+            width: 56px; height: 70px;
+            background: linear-gradient(160deg, var(--leather-light), var(--leather), var(--leather-dark));
+            border-radius: 3px 8px 8px 3px; border: 1px solid rgba(197,165,90,0.3);
+            position: relative; display: flex; align-items: center; justify-content: center;
+            box-shadow: -3px 0 0 var(--leather-dark), -5px 0 0 rgba(60,35,10,0.8),
+                2px 4px 15px rgba(0,0,0,0.5), 0 0 25px rgba(197,165,90,0.08);
+        }
+        .book-icon-symbol { font-size: 1.2rem; color: var(--ancient-gold); text-shadow: 0 0 10px rgba(197,165,90,0.5); }
+        .book-icon-border {
+            position: absolute; top: 15%; left: 15%; right: 15%; bottom: 15%;
+            border: 1px solid rgba(197,165,90,0.2); border-radius: 2px; pointer-events: none;
+        }
+        .book-icon-spine {
+            position: absolute; left: -5px; top: 2px; bottom: 2px; width: 5px;
+            background: linear-gradient(to right, #2a1505, #4a2810); border-radius: 2px 0 0 2px;
+        }
+        .book-label {
+            font-family: 'Cinzel', serif; font-size: 0.55rem; color: var(--ancient-gold);
+            text-align: center; margin-top: 6px; letter-spacing: 0.08em;
+            text-shadow: 0 0 8px rgba(197,165,90,0.3);
+        }
+        .spellbook-overlay {
+            position: fixed; inset: 0; z-index: 200; display: flex;
+            align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s;
+        }
+        .spellbook-overlay.open { opacity: 1; pointer-events: all; }
+        .spellbook-backdrop {
+            position: absolute; inset: 0; background: rgba(4,4,10,0.75);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .spellbook-panel {
+            position: relative; width: 90vw; max-width: 820px;
+            height: 80vh; max-height: 620px; display: flex;
+            background: linear-gradient(135deg, #1a1008, #0e0a04);
+            border: 2px solid rgba(197,165,90,0.2); border-radius: 6px 16px 16px 6px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 30px rgba(197,165,90,0.06),
+                -6px 0 0 #1e0f04, -8px 0 0 #2a1505;
+            transform: scale(0.9) rotateY(10deg);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .spellbook-overlay.open .spellbook-panel { transform: scale(1) rotateY(0deg); }
+        .book-spine {
+            width: 36px; flex-shrink: 0;
+            background: linear-gradient(to right, var(--leather-dark), var(--leather), var(--leather-dark));
+            border-right: 1px solid rgba(197,165,90,0.1);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 20px; border-radius: 6px 0 0 6px;
+        }
+        .spine-rune { font-size: 0.9rem; color: var(--ancient-gold); opacity: 0.5; text-shadow: 0 0 6px rgba(197,165,90,0.3); }
+        .book-pages { flex: 1; display: flex; overflow: hidden; border-radius: 0 14px 14px 0; }
+        .book-page {
+            flex: 1; padding: 24px 20px; overflow-y: auto;
+            background: linear-gradient(180deg, rgba(240,228,200,0.04) 0%, rgba(200,184,144,0.02) 100%);
+        }
+        .book-page:first-child { border-right: 1px solid rgba(197,165,90,0.08); }
+        .book-page { scrollbar-width: none; }
+        .book-page::-webkit-scrollbar { display: none; }
+        .page-title {
+            font-family: 'Cinzel Decorative', serif; font-size: 0.95rem;
+            color: var(--ancient-gold); letter-spacing: 0.1em; margin-bottom: 4px;
+            text-shadow: 0 0 15px rgba(197,165,90,0.2);
+        }
+        .page-subtitle { font-size: 0.7rem; color: var(--text-dim); font-style: italic; margin-bottom: 16px; }
+        .provider-group { margin-bottom: 14px; }
+        .provider-label {
+            font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
+            color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase;
+            margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .model-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+        .model-chip {
+            font-family: 'Crimson Pro', serif; font-size: 0.72rem; padding: 4px 10px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03); color: var(--text-dim);
+            cursor: pointer; transition: all 0.25s; white-space: nowrap;
+        }
+        .model-chip:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: var(--text-light); }
+        .model-chip.selected {
+            background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(123,47,190,0.08));
+            border-color: rgba(0,212,255,0.3); color: var(--crystal-cyan); box-shadow: 0 0 10px rgba(0,212,255,0.08);
+        }
+        .model-chip.multi-selected {
+            background: linear-gradient(135deg, rgba(197,165,90,0.12), rgba(139,105,20,0.08));
+            border-color: rgba(197,165,90,0.3); color: var(--ancient-gold); box-shadow: 0 0 10px rgba(197,165,90,0.08);
+        }
+        .multi-chat-toggle {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+            font-family: 'Cinzel', serif; font-size: 0.68rem;
+            color: var(--text-dim); letter-spacing: 0.05em;
+        }
+        .toggle-switch {
+            width: 32px; height: 16px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            cursor: pointer; position: relative; transition: all 0.3s;
+        }
+        .toggle-switch::after {
+            content: ''; width: 12px; height: 12px; background: var(--text-dim);
+            border-radius: 50%; position: absolute; top: 1px; left: 1px; transition: all 0.3s;
+        }
+        .toggle-switch.active { background: rgba(197,165,90,0.15); border-color: rgba(197,165,90,0.3); }
+        .toggle-switch.active::after { left: 17px; background: var(--ancient-gold); box-shadow: 0 0 6px rgba(197,165,90,0.4); }
+        .voice-list { display: flex; flex-direction: column; gap: 4px; }
+        .voice-item {
+            display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+            border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all 0.25s;
+        }
+        .voice-item:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+        .voice-item.selected {
+            background: linear-gradient(135deg, rgba(123,47,190,0.1), rgba(80,20,140,0.06));
+            border-color: rgba(123,47,190,0.25);
+        }
+        .voice-name { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--text-light); flex: 1; }
+        .voice-meta { font-size: 0.62rem; color: var(--text-dim); }
+        .voice-gender {
+            font-size: 0.6rem; width: 14px; height: 14px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .voice-gender.f { color: #e8a0c0; background: rgba(232,160,192,0.1); }
+        .voice-gender.m { color: #80b0e0; background: rgba(128,176,224,0.1); }
+        .voice-quality-toggle { display: flex; gap: 4px; margin-bottom: 14px; }
+        .quality-btn {
+            font-family: 'Cinzel', serif; font-size: 0.62rem; padding: 4px 12px;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02); color: var(--text-dim);
+            cursor: pointer; transition: all 0.25s; letter-spacing: 0.06em;
+        }
+        .quality-btn.active { background: rgba(123,47,190,0.12); border-color: rgba(123,47,190,0.3); color: #c090e8; }
+        /* ── Realm settings ────────────────────────────── */
+        .realm-section { margin-top: 20px; border-top: 1px solid rgba(197,165,90,0.08); padding-top: 14px; }
+        .realm-section .page-title { font-size: 0.8rem; margin-bottom: 2px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .realm-section .page-title::after {
+            content: '\25BE'; font-size: 0.6rem; transition: transform 0.3s; opacity: 0.5;
+        }
+        .realm-section.collapsed .page-title::after { transform: rotate(-90deg); }
+        .realm-section.collapsed .realm-body { display: none; }
+        .realm-group { margin-bottom: 12px; }
+        .realm-group-label {
+            font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+            color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
+            margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+        }
+        .realm-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+        }
+        .realm-label {
+            font-family: 'Crimson Pro', serif; font-size: 0.7rem;
+            color: var(--text-dim); min-width: 70px; text-align: right;
+        }
+        .realm-select {
+            flex: 1; font-family: 'Crimson Pro', serif; font-size: 0.7rem;
+            padding: 4px 8px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03); color: var(--text-light);
+            cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237a7060'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 8px center;
+            padding-right: 22px;
+        }
+        .realm-select:focus { outline: none; border-color: rgba(197,165,90,0.3); }
+        .realm-select option { background: #1a1008; color: var(--text-light); }
+        .realm-toggle {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+        }
+        .realm-toggle .toggle-switch { width: 28px; height: 14px; }
+        .realm-toggle .toggle-switch::after { width: 10px; height: 10px; }
+        .realm-toggle .toggle-switch.active::after { left: 15px; }
+        .realm-toggle-label {
+            font-family: 'Crimson Pro', serif; font-size: 0.7rem; color: var(--text-dim);
+        }
+
+        .spellbook-close {
+            position: absolute; top: 10px; right: 14px; width: 28px; height: 28px;
+            border-radius: 50%; border: 1px solid rgba(197,165,90,0.15);
+            background: rgba(0,0,0,0.3); color: var(--text-dim); font-size: 0.9rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s; z-index: 10;
+        }
+        .spellbook-close:hover { color: var(--ancient-gold); border-color: rgba(197,165,90,0.3); }
+        .status-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 24px;
+            background: rgba(6,6,14,0.8); border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: center; justify-content: center; gap: 20px;
+            font-family: 'Crimson Pro', serif; font-size: 0.65rem;
+            color: var(--text-dim); z-index: 50; padding: 0 16px;
+        }
+        .status-item { display: flex; align-items: center; gap: 4px; }
+        .status-dot { width: 5px; height: 5px; border-radius: 50%; }
+        .status-dot.connected { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+        .status-dot.disconnected { background: #666; }
+        #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        @media (max-width: 900px) {
+            .spellbook-panel { flex-direction: column; max-width: 95vw; }
+            .book-spine { display: none; }
+            .book-pages { flex-direction: column; }
+            .book-page:first-child { border-right: none; border-bottom: 1px solid rgba(197,165,90,0.08); }
+            .spellbook-toggle { right: 10px; }
+        }
+        @media (max-width: 600px) {
+            .crystal-ball { width: clamp(260px, 70vw, 350px); height: clamp(260px, 70vw, 350px); }
+            .incantation-bar { padding: 0.6rem 1rem 1rem; }
+        }
+        .chat-area, .message-bubble { user-select: text; }
+    </style>
+</head>
+<body>
+    <canvas id="cosmos"></canvas>
+    <canvas id="particles"></canvas>
+    <div class="ambient-glow"></div>
+
+    <div class="app">
+        <h1 class="oracle-title">THE ORACLE</h1>
+        <p class="oracle-subtitle">peer into the crystal and speak your truth</p>
+
+        <div class="oracle-stage">
+            <div class="crystal-ball-wrapper">
+                <div class="crystal-ball" id="crystalBall">
+                    <div class="ball-mist ball-mist-1"></div>
+                    <div class="ball-mist ball-mist-2"></div>
+                    <div class="chat-area" id="chatArea"></div>
+                    <div class="subtitle-layer" id="subtitleLayer">
+                        <div class="subtitle-waves" id="subtitleWaves">
+                            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <div class="subtitle-text" id="subtitleText"></div>
+                    </div>
+                    <div class="ball-reflection"></div>
+                    <div class="ball-reflection-2"></div>
+                    <div class="ball-ring"></div>
+                </div>
+                <div class="ball-stand">
+                    <div class="stand-top"></div>
+                    <div class="stand-base"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="incantation-bar">
+            <div class="voice-cluster">
+                <button class="voice-orb" id="voiceBtn" title="Listen — transcribe voice to text">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>
+                <button class="voice-action speak-btn" id="speakBtn" title="Speak — read last response aloud">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    </svg>
+                </button>
+                <button class="voice-action converse-btn" id="converseBtn" title="Converse — voice conversation turn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/>
+                    </svg>
+                </button>
+                <button class="voice-action talk-btn" id="talkBtn" title="Talk — speak then listen (full duplex)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 7v1a7 7 0 0 1-14 0V7"/>
+                        <path d="M8 18l-2 4"/><path d="M16 18l2 4"/>
+                        <path d="M15.54 15a4 4 0 0 0 0-5.66"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="input-scroll">
+                <textarea id="chatInput" placeholder="Speak your incantation..." rows="1"></textarea>
+            </div>
+            <button class="cast-btn" id="castBtn" title="Send message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="spellbook-toggle" id="spellbookToggle">
+        <div class="book-icon">
+            <div class="book-icon-spine"></div>
+            <span class="book-icon-symbol">&#10038;</span>
+            <div class="book-icon-border"></div>
+        </div>
+        <div class="book-label">Grimoire</div>
+    </div>
+
+    <div class="spellbook-overlay" id="spellbookOverlay">
+        <div class="spellbook-backdrop" id="spellbookBackdrop"></div>
+        <div class="spellbook-panel">
+            <button class="spellbook-close" id="spellbookClose">&times;</button>
+            <div class="book-spine">
+                <span class="spine-rune">&#10038;</span>
+                <span class="spine-rune">&#10039;</span>
+                <span class="spine-rune">&#10040;</span>
+                <span class="spine-rune">&#10038;</span>
+            </div>
+            <div class="book-pages">
+                <div class="book-page" id="modelsPage">
+                    <div class="page-title">Oracles</div>
+                    <div class="page-subtitle">choose the minds that answer your call</div>
+                    <div class="multi-chat-toggle">
+                        <div class="toggle-switch" id="multiChatToggle"></div>
+                        <span>Multi-Oracle Ritual</span>
+                    </div>
+                    <div id="modelList"></div>
+                </div>
+                <div class="book-page" id="voicesPage">
+                    <div class="page-title">Enchantments</div>
+                    <div class="page-subtitle">the voice of the oracle</div>
+                    <div class="voice-quality-toggle">
+                        <button class="quality-btn active" data-quality="fast">Swift</button>
+                        <button class="quality-btn" data-quality="hd">Resonant HD</button>
+                    </div>
+                    <div class="voice-list" id="voiceList"></div>
+
+                    <div class="realm-section" id="realmSection">
+                        <div class="page-title" id="realmToggle">Realms</div>
+                        <div class="page-subtitle">gateways to the planes of intelligence</div>
+                        <div class="realm-body">
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; Azure Speech &#8212; Listening</div>
+                                <div class="realm-row">
+                                    <span class="realm-label">STT Region</span>
+                                    <select class="realm-select" id="speechRegion">
+                                        <option value="westus">West US</option>
+                                        <option value="westus2">West US 2</option>
+                                        <option value="eastus">East US</option>
+                                        <option value="eastus2">East US 2</option>
+                                        <option value="southcentralus">South Central US</option>
+                                        <option value="northeurope">North Europe</option>
+                                        <option value="westeurope">West Europe</option>
+                                        <option value="southeastasia">Southeast Asia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; Azure Speech &#8212; Voice</div>
+                                <div class="realm-row">
+                                    <span class="realm-label">TTS Region</span>
+                                    <select class="realm-select" id="ttsRegion">
+                                        <option value="">(same as STT)</option>
+                                        <option value="westus">West US</option>
+                                        <option value="westus2">West US 2</option>
+                                        <option value="eastus">East US</option>
+                                        <option value="eastus2">East US 2</option>
+                                        <option value="southcentralus">South Central US</option>
+                                        <option value="northeurope">North Europe</option>
+                                        <option value="westeurope">West Europe</option>
+                                        <option value="southeastasia">Southeast Asia</option>
+                                    </select>
+                                </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">TTS Key</span>
+                                    <input type="password" class="realm-select" id="ttsKey" placeholder="(same as STT key)" autocomplete="off" style="font-size:0.65rem;">
+                                </div>
+                            </div>
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; Google Vertex AI</div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Region</span>
+                                    <select class="realm-select" id="googleRegion">
+                                        <option value="global">Global</option>
+                                        <option value="us-east4">US East 4</option>
+                                        <option value="us-central1">US Central 1</option>
+                                        <option value="us-west1">US West 1</option>
+                                        <option value="europe-west1">Europe West 1</option>
+                                        <option value="europe-west4">Europe West 4</option>
+                                        <option value="asia-southeast1">Asia SE 1</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; AWS Bedrock</div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Region</span>
+                                    <select class="realm-select" id="awsRegion">
+                                        <option value="us-east-1">US East 1</option>
+                                        <option value="us-west-2">US West 2</option>
+                                        <option value="eu-west-1">EU West 1</option>
+                                        <option value="eu-central-1">EU Central 1</option>
+                                        <option value="ap-southeast-1">AP SE 1</option>
+                                        <option value="ap-northeast-1">AP NE 1</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; Auto-Speak</div>
+                                <div class="realm-toggle">
+                                    <div class="toggle-switch" id="autoSpeakToggle"></div>
+                                    <span class="realm-toggle-label">Read oracle responses aloud</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-dot disconnected" id="statusDot"></span>
+            <span id="statusText">Awaiting ethereal connection</span>
+        </div>
+        <div class="status-item">Oracle: <strong id="currentModelDisplay">claude-opus-4.6</strong></div>
+        <div class="status-item">Voice: <strong id="currentVoiceDisplay">Ava HD</strong></div>
+    </div>
+
+    <script>
+    var state = {
+        messages: [],
+        selectedModel: 'claude-opus-4.6',
+        selectedModels: new Set(['claude-opus-4.6']),
+        multiChat: false,
+        selectedVoice: 'en-US-Ava:DragonHDLatestNeural',
+        voiceQuality: 'hd',
+        isRecording: false,
+        autoSpeak: false,
+        chatReady: false,
+        speechReady: false,
+        ws: null,
+        connected: false,
+    };
+
+    var MODELS = {
+        'Azure Arcane \u2014 Deployed': {
+            icon: '\u25C6',
+            models: ['o1','o4-mini','o1-mini','o1-preview','o3-mini','gpt-5.3-chat','gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-35-turbo'],
+        },
+        'Azure Arcane \u2014 Serverless': {
+            icon: '\u25C7',
+            models: ['grok-3','grok-3-mini','DeepSeek-R1','Meta-Llama-3.1-405B-Instruct','Meta-Llama-3.1-8B-Instruct','Llama-3.2-11B-Vision-Instruct','Llama-3.2-90B-Vision-Instruct','Llama-3.3-70B-Instruct','Llama-4-Scout-17B-16E-Instruct','Phi-4','Cohere-command-r-plus-08-2024','Cohere-command-r-08-2024','Codestral-2501','Ministral-3B'],
+        },
+        'Celestial \u2014 Google': {
+            icon: '\u2727',
+            models: ['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-pro-preview'],
+        },
+        'Elemental \u2014 AWS Bedrock': {
+            icon: '\u25C8',
+            models: ['claude-opus-4.5','claude-opus-4.6','claude-sonnet-4','claude-sonnet-4.5','claude-sonnet-4.6','claude-haiku-4.5','nova-pro','nova-lite','nova-2-lite','llama4-maverick-17b','llama4-scout-17b','palmyra-x4','palmyra-x5'],
+        },
+    };
+
+    var VOICES = [
+        { id: 'en-US-Ava:DragonHDLatestNeural', name: 'Ava HD', lang: 'US', gender: 'F', special: true },
+        { id: 'en-US-AvaNeural', name: 'Ava', lang: 'US', gender: 'F' },
+        { id: 'en-US-AndrewNeural', name: 'Andrew', lang: 'US', gender: 'M' },
+        { id: 'en-US-AriaNeural', name: 'Aria', lang: 'US', gender: 'F' },
+        { id: 'en-US-BrianNeural', name: 'Brian', lang: 'US', gender: 'M' },
+        { id: 'en-US-DavisNeural', name: 'Davis', lang: 'US', gender: 'M' },
+        { id: 'en-US-JennyNeural', name: 'Jenny', lang: 'US', gender: 'F' },
+        { id: 'en-US-GuyNeural', name: 'Guy', lang: 'US', gender: 'M' },
+        { id: 'en-US-SaraNeural', name: 'Sara', lang: 'US', gender: 'F' },
+        { id: 'en-US-SteffanNeural', name: 'Steffan', lang: 'US', gender: 'M' },
+        { id: 'en-US-TonyNeural', name: 'Tony', lang: 'US', gender: 'M' },
+        { id: 'en-GB-SoniaNeural', name: 'Sonia', lang: 'GB', gender: 'F' },
+        { id: 'en-GB-RyanNeural', name: 'Ryan', lang: 'GB', gender: 'M' },
+        { id: 'en-AU-NatashaNeural', name: 'Natasha', lang: 'AU', gender: 'F' },
+        { id: 'en-AU-WilliamNeural', name: 'William', lang: 'AU', gender: 'M' },
+        { id: 'en-IN-NeerjaNeural', name: 'Neerja', lang: 'IN', gender: 'F' },
+        { id: 'en-IE-EmilyNeural', name: 'Emily', lang: 'IE', gender: 'F' },
+    ];
+
+    var chatArea      = document.getElementById('chatArea');
+    var chatInput     = document.getElementById('chatInput');
+    var castBtn       = document.getElementById('castBtn');
+    var voiceBtn      = document.getElementById('voiceBtn');
+    var speakBtn      = document.getElementById('speakBtn');
+    var converseBtn   = document.getElementById('converseBtn');
+    var talkBtn       = document.getElementById('talkBtn');
+    var spellToggle   = document.getElementById('spellbookToggle');
+    var spellOverlay  = document.getElementById('spellbookOverlay');
+    var spellBackdrop = document.getElementById('spellbookBackdrop');
+    var spellClose    = document.getElementById('spellbookClose');
+    var multiToggle   = document.getElementById('multiChatToggle');
+    var modelListEl   = document.getElementById('modelList');
+    var voiceListEl   = document.getElementById('voiceList');
+    var modelDisplay  = document.getElementById('currentModelDisplay');
+    var voiceDisplay  = document.getElementById('currentVoiceDisplay');
+    var subtitleLayer = document.getElementById('subtitleLayer');
+    var subtitleText  = document.getElementById('subtitleText');
+    var subtitleWaves = document.getElementById('subtitleWaves');
+    var crystalBall   = document.getElementById('crystalBall');
+    var statusDot     = document.getElementById('statusDot');
+    var statusText    = document.getElementById('statusText');
+
+    // Voice activity state for visual effects
+    var voiceVU = 0;        // 0.0-1.0, read by starfield/particles
+    var voiceMode = null;   // 'listen', 'speak', or null
+    var vuDecayTimer = null;
+
+    function createEl(tag, className, textContent) {
+        var el = document.createElement(tag);
+        if (className) el.className = className;
+        if (textContent !== undefined) el.textContent = textContent;
+        return el;
+    }
+
+    /* ── Starfield ─────────────────────────────────────────────── */
+    function initStarfield() {
+        var canvas = document.getElementById('cosmos');
+        var ctx = canvas.getContext('2d');
+        var stars = [];
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = [];
+            var count = Math.floor((canvas.width * canvas.height) / 3500);
+            for (var i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    r: Math.random() * 1.2 + 0.2, brightness: Math.random(),
+                    speed: Math.random() * 0.0008 + 0.0002, phase: Math.random() * Math.PI * 2,
+                });
+            }
+        }
+        function draw(t) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var vu = voiceVU;
+            var boost = vu * 0.6;  // voice energy brightens stars
+            var isListen = voiceMode === 'listen';
+            var isSpeak = voiceMode === 'speak';
+            for (var i = 0; i < stars.length; i++) {
+                var s = stars[i];
+                var flicker = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase));
+                var alpha = Math.min(1, s.brightness * flicker + boost * s.brightness);
+                var sr = s.r + vu * s.r * 0.5;
+                // Tint stars toward cyan (listen) or gold (speak)
+                var r = 200, g = 210, b = 240;
+                if (isListen && vu > 0.1) {
+                    r = Math.round(200 - vu * 160); g = Math.round(210 + vu * 30); b = 240;
+                } else if (isSpeak && vu > 0.1) {
+                    r = Math.round(200 + vu * 55); g = Math.round(210 + vu * 20); b = Math.round(240 - vu * 150);
+                }
+                ctx.beginPath(); ctx.arc(s.x, s.y, sr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')'; ctx.fill();
+                if (sr > 0.9) {
+                    var gr = isSpeak ? Math.round(150 + vu * 80) : 150;
+                    var gg = isSpeak ? Math.round(180 + vu * 40) : (isListen ? Math.round(180 + vu * 50) : 180);
+                    var gb = isListen ? 255 : (isSpeak ? Math.round(255 - vu * 160) : 255);
+                    ctx.beginPath(); ctx.arc(s.x, s.y, sr * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + gr + ',' + gg + ',' + gb + ',' + (alpha * (0.08 + boost * 0.12)) + ')'; ctx.fill();
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+        window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+    }
+
+    /* ── Particles ─────────────────────────────────────────────── */
+    function initParticles() {
+        var canvas = document.getElementById('particles');
+        var ctx = canvas.getContext('2d');
+        var motes = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        var colors = [[0,212,255],[123,47,190],[197,165,90],[80,140,255]];
+        function spawn() {
+            var c = colors[Math.floor(Math.random() * colors.length)];
+            var life = Math.random() * 400 + 200;
+            return { x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+                vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15-0.05,
+                r: Math.random()*1.8+0.4, life: life, maxLife: life,
+                color: c, phase: Math.random()*Math.PI*2 };
+        }
+        var count = Math.floor((window.innerWidth * window.innerHeight) / 18000);
+        for (var i = 0; i < count; i++) {
+            var m = spawn(); m.life = Math.random() * m.maxLife; motes.push(m);
+        }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var vu = voiceVU;
+            for (var i = motes.length - 1; i >= 0; i--) {
+                var m = motes[i];
+                m.x += m.vx * (1 + vu * 1.5);
+                m.y += m.vy * (1 + vu * 1.5);
+                m.life--;
+                if (m.life <= 0) { motes[i] = spawn(); continue; }
+                var progress = 1 - m.life / m.maxLife;
+                var fade = progress < 0.15 ? progress/0.15 : progress > 0.8 ? (1-progress)/0.2 : 1;
+                var pulse = 0.7 + 0.3 * Math.sin(Date.now() * 0.002 + m.phase);
+                var alpha = fade * pulse * (0.45 + vu * 0.4);
+                var r=m.color[0], g=m.color[1], b=m.color[2];
+                ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
+                ctx.fillStyle='rgba('+r+','+g+','+b+','+alpha+')'; ctx.fill();
+                ctx.beginPath(); ctx.arc(m.x, m.y, m.r*3, 0, Math.PI*2);
+                ctx.fillStyle='rgba('+r+','+g+','+b+','+(alpha*0.15)+')'; ctx.fill();
+            }
+            requestAnimationFrame(draw);
+        }
+        window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
+    }
+
+    /* ── Chat (safe DOM rendering) ─────────────────────────────── */
+    function addMessage(role, text, model) {
+        state.messages.push({ role: role, text: text, model: model, time: Date.now() });
+        renderMessage(role, text, model);
+        setTimeout(function(){ chatArea.scrollTop = chatArea.scrollHeight; }, 50);
+    }
+
+    function renderMessage(role, text, model) {
+        var div = createEl('div', 'message message-' + role);
+        if (role === 'system') {
+            var bubble = createEl('div', 'message-bubble', text);
+            div.appendChild(bubble);
+        } else {
+            var label = createEl('div', 'message-label');
+            label.appendChild(createEl('span', 'dot'));
+            label.appendChild(createEl('span', null, role === 'user' ? 'You' : (model || 'Oracle')));
+            var bubble = createEl('div', 'message-bubble');
+            renderFormattedText(bubble, text);
+            div.appendChild(label);
+            div.appendChild(bubble);
+        }
+        chatArea.appendChild(div);
+    }
+
+    function renderFormattedText(container, text) {
+        var lines = text.split('\n');
+        var inCodeBlock = false, codeLines = [];
+        for (var i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf('```') === 0) {
+                if (inCodeBlock) {
+                    var pre = document.createElement('pre');
+                    var code = document.createElement('code');
+                    code.textContent = codeLines.join('\n');
+                    pre.appendChild(code); container.appendChild(pre);
+                    codeLines = []; inCodeBlock = false;
+                } else { inCodeBlock = true; }
+                continue;
+            }
+            if (inCodeBlock) { codeLines.push(lines[i]); continue; }
+            if (i > 0) container.appendChild(document.createElement('br'));
+            renderInlineLine(container, lines[i]);
+        }
+        if (inCodeBlock && codeLines.length > 0) {
+            var pre = document.createElement('pre');
+            var code = document.createElement('code');
+            code.textContent = codeLines.join('\n');
+            pre.appendChild(code); container.appendChild(pre);
+        }
+    }
+
+    function renderInlineLine(container, line) {
+        /* Safe inline markdown: **bold**, *italic*, `code` via DOM nodes */
+        var parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+        for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            if (!p) continue;
+            if (p.length > 4 && p.charAt(0) === '*' && p.charAt(1) === '*' && p.charAt(p.length-1) === '*' && p.charAt(p.length-2) === '*') {
+                var strong = document.createElement('strong');
+                strong.textContent = p.slice(2, -2);
+                container.appendChild(strong);
+            } else if (p.length > 2 && p.charAt(0) === '*' && p.charAt(p.length-1) === '*' && p.charAt(1) !== '*') {
+                var em = document.createElement('em');
+                em.textContent = p.slice(1, -1);
+                container.appendChild(em);
+            } else if (p.length > 2 && p.charAt(0) === '`' && p.charAt(p.length-1) === '`') {
+                var codeEl = document.createElement('code');
+                codeEl.textContent = p.slice(1, -1);
+                container.appendChild(codeEl);
+            } else {
+                container.appendChild(document.createTextNode(p));
+            }
+        }
+    }
+
+    function showThinking() {
+        var div = createEl('div', 'message message-ai');
+        div.id = 'thinkingMsg';
+        var label = createEl('div', 'message-label');
+        label.appendChild(createEl('span', 'dot'));
+        label.appendChild(createEl('span', null, 'Oracle'));
+        var thinking = createEl('div', 'thinking');
+        thinking.appendChild(document.createElement('span'));
+        thinking.appendChild(document.createElement('span'));
+        thinking.appendChild(document.createElement('span'));
+        div.appendChild(label); div.appendChild(thinking);
+        chatArea.appendChild(div);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function removeThinking() {
+        var el = document.getElementById('thinkingMsg');
+        if (el) el.remove();
+    }
+
+    function sendMessage() {
+        var text = chatInput.value.trim();
+        if (!text) return;
+        chatInput.value = '';
+        autoResizeInput();
+        addMessage('user', text);
+
+        if (state.connected && state.ws && state.ws.readyState === WebSocket.OPEN) {
+            showThinking();
+            state.ws.send(JSON.stringify({
+                type: 'chat', message: text,
+                model: state.multiChat ? Array.from(state.selectedModels) : state.selectedModel,
+                multiChat: state.multiChat
+            }));
+        } else {
+            showThinking();
+            var models = state.multiChat ? Array.from(state.selectedModels) : [state.selectedModel];
+            setTimeout(function(){
+                removeThinking();
+                for (var i = 0; i < models.length; i++) {
+                    addMessage('ai',
+                        'The ethereal connection is not yet established. To awaken the Oracle, connect a WebSocket server at ws://localhost:8778.\n\nYour incantation was received.',
+                        models[i]
+                    );
+                }
+            }, 1200);
+        }
+    }
+
+    /* ── Voice activity / crystal ball VU ────────────── */
+    function setVoiceVU(level, mode) {
+        voiceVU = level;
+        voiceMode = mode;
+        crystalBall.style.setProperty('--vu', level);
+        crystalBall.classList.add('voice-active');
+        crystalBall.classList.remove('voice-listen', 'voice-speak');
+        if (mode === 'listen') crystalBall.classList.add('voice-listen');
+        else if (mode === 'speak') crystalBall.classList.add('voice-speak');
+
+        // Reset decay timer
+        if (vuDecayTimer) clearTimeout(vuDecayTimer);
+        vuDecayTimer = setTimeout(function() {
+            voiceVU = 0; voiceMode = null;
+            crystalBall.style.removeProperty('--vu');
+            crystalBall.classList.remove('voice-active', 'voice-listen', 'voice-speak');
+        }, 500);
+    }
+
+    /* ── Live subtitle helpers ──────────────────────── */
+    var subtitleTimeout = null;
+
+    function showListening() {
+        subtitleText.textContent = '';
+        subtitleWaves.style.display = 'flex';
+        subtitleLayer.classList.add('active');
+    }
+
+    function showSubtitle(text) {
+        if (subtitleTimeout) { clearTimeout(subtitleTimeout); subtitleTimeout = null; }
+        subtitleWaves.style.display = 'none';
+        subtitleText.innerHTML = '';
+        subtitleLayer.classList.add('active');
+
+        // Build character spans with staggered materialization
+        for (var i = 0; i < text.length; i++) {
+            var span = document.createElement('span');
+            span.className = 'subtitle-char';
+            span.style.animationDelay = (i * 0.018) + 's';
+            span.textContent = text[i] === ' ' ? '\u00a0' : text[i];
+            subtitleText.appendChild(span);
+        }
+
+        // After all chars appear, add shimmer sweep
+        var shimmerDelay = text.length * 18 + 150;
+        setTimeout(function() {
+            subtitleText.classList.add('subtitle-shimmer');
+        }, shimmerDelay);
+
+        // Fade out after reading time (min 2s, ~60ms per char)
+        var displayTime = Math.max(2000, text.length * 60) + shimmerDelay;
+        subtitleTimeout = setTimeout(function() {
+            hideSubtitle();
+        }, displayTime);
+    }
+
+    function hideSubtitle() {
+        if (subtitleTimeout) { clearTimeout(subtitleTimeout); subtitleTimeout = null; }
+        subtitleLayer.classList.remove('active');
+        subtitleText.classList.remove('subtitle-shimmer');
+        // Reset content after fade transition
+        setTimeout(function() {
+            subtitleText.innerHTML = '';
+            subtitleWaves.style.display = 'none';
+        }, 600);
+    }
+
+    function autoResizeInput() {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    }
+    chatInput.addEventListener('input', autoResizeInput);
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    castBtn.addEventListener('click', sendMessage);
+
+    voiceBtn.addEventListener('click', function() {
+        if (state.isRecording) {
+            state.isRecording = false;
+            voiceBtn.classList.remove('recording');
+            addMessage('system', 'Voice capture ended.');
+            return;
+        }
+        if (state.connected && state.ws && state.ws.readyState === WebSocket.OPEN) {
+            state.isRecording = true;
+            voiceBtn.classList.add('recording');
+            state.ws.send(JSON.stringify({ type: 'listen' }));
+        } else {
+            addMessage('system', 'Voice requires an ethereal connection. Start the server first.');
+        }
+    });
+
+    /* ── Speak button — read last AI response aloud ──── */
+    speakBtn.addEventListener('click', function() {
+        if (!state.connected) return;
+        // Find last AI message
+        var lastAI = '';
+        for (var i = state.messages.length - 1; i >= 0; i--) {
+            if (state.messages[i].role === 'ai') { lastAI = state.messages[i].text; break; }
+        }
+        if (!lastAI) { addMessage('system', 'No oracle response to speak.'); return; }
+        speakBtn.classList.add('active');
+        state.ws.send(JSON.stringify({
+            type: 'speak', text: lastAI,
+            voice: state.selectedVoice, quality: state.voiceQuality
+        }));
+    });
+
+    /* ── Converse button — voice conversation turn ───── */
+    converseBtn.addEventListener('click', function() {
+        if (!state.connected) return;
+        if (state.isRecording) {
+            state.isRecording = false;
+            converseBtn.classList.remove('active');
+            return;
+        }
+        state.isRecording = true;
+        converseBtn.classList.add('active');
+        state.ws.send(JSON.stringify({ type: 'converse' }));
+    });
+
+    /* ── Talk button — speak input then listen ────────── */
+    talkBtn.addEventListener('click', function() {
+        if (!state.connected) return;
+        var text = chatInput.value.trim();
+        if (!text) {
+            // If no text, find last AI response to speak
+            for (var i = state.messages.length - 1; i >= 0; i--) {
+                if (state.messages[i].role === 'ai') { text = state.messages[i].text; break; }
+            }
+        }
+        if (!text) { addMessage('system', 'Write or receive an oracle response first.'); return; }
+        chatInput.value = '';
+        autoResizeInput();
+        talkBtn.classList.add('active');
+        state.ws.send(JSON.stringify({
+            type: 'talk', text: text,
+            voice: state.selectedVoice, quality: state.voiceQuality
+        }));
+    });
+
+    function openSpellbook() { spellOverlay.classList.add('open'); spellToggle.classList.add('hidden'); }
+    function closeSpellbook() { spellOverlay.classList.remove('open'); setTimeout(function(){ spellToggle.classList.remove('hidden'); }, 300); }
+    spellToggle.addEventListener('click', openSpellbook);
+    spellBackdrop.addEventListener('click', closeSpellbook);
+    spellClose.addEventListener('click', closeSpellbook);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSpellbook(); });
+
+    function renderModels() {
+        modelListEl.textContent = '';
+        var groups = Object.keys(MODELS);
+        for (var g = 0; g < groups.length; g++) {
+            var group = groups[g], data = MODELS[group];
+            var section = createEl('div', 'provider-group');
+            var label = createEl('div', 'provider-label');
+            label.appendChild(createEl('span', null, data.icon + ' '));
+            label.appendChild(document.createTextNode(group));
+            section.appendChild(label);
+            var grid = createEl('div', 'model-grid');
+            for (var m = 0; m < data.models.length; m++) {
+                (function(model){
+                    var chip = createEl('div', 'model-chip', model);
+                    chip.dataset.model = model;
+                    updateChipState(chip, model);
+                    chip.addEventListener('click', function(){ selectModel(model); });
+                    grid.appendChild(chip);
+                })(data.models[m]);
+            }
+            section.appendChild(grid);
+            modelListEl.appendChild(section);
+        }
+    }
+
+    function updateChipState(chip, model) {
+        chip.classList.remove('selected', 'multi-selected');
+        if (state.multiChat) {
+            if (state.selectedModels.has(model)) chip.classList.add('multi-selected');
+        } else {
+            if (state.selectedModel === model) chip.classList.add('selected');
+        }
+    }
+
+    function selectModel(model) {
+        if (state.multiChat) {
+            if (state.selectedModels.has(model)) {
+                if (state.selectedModels.size > 1) state.selectedModels.delete(model);
+            } else { state.selectedModels.add(model); }
+        } else {
+            state.selectedModel = model;
+            state.selectedModels = new Set([model]);
+        }
+        refreshAllChips();
+        updateStatusDisplay();
+    }
+
+    function refreshAllChips() {
+        var chips = document.querySelectorAll('.model-chip');
+        for (var i = 0; i < chips.length; i++) updateChipState(chips[i], chips[i].dataset.model);
+    }
+
+    multiToggle.addEventListener('click', function() {
+        state.multiChat = !state.multiChat;
+        multiToggle.classList.toggle('active', state.multiChat);
+        if (!state.multiChat) {
+            var first = state.selectedModels.values().next().value;
+            state.selectedModel = first;
+            state.selectedModels = new Set([first]);
+        }
+        refreshAllChips();
+        updateStatusDisplay();
+    });
+
+    function renderVoices() {
+        voiceListEl.textContent = '';
+        for (var i = 0; i < VOICES.length; i++) {
+            (function(v){
+                var item = createEl('div', 'voice-item' + (v.id === state.selectedVoice ? ' selected' : ''));
+                item.appendChild(createEl('span', 'voice-gender ' + v.gender.toLowerCase(), v.gender === 'F' ? '\u2640' : '\u2642'));
+                item.appendChild(createEl('span', 'voice-name', v.name + (v.special ? ' \u2727' : '')));
+                item.appendChild(createEl('span', 'voice-meta', v.lang));
+                item.addEventListener('click', function() {
+                    state.selectedVoice = v.id;
+                    var items = document.querySelectorAll('.voice-item');
+                    for (var j = 0; j < items.length; j++) items[j].classList.remove('selected');
+                    item.classList.add('selected');
+                    updateStatusDisplay();
+                });
+                voiceListEl.appendChild(item);
+            })(VOICES[i]);
+        }
+    }
+
+    var qualBtns = document.querySelectorAll('.quality-btn');
+    for (var i = 0; i < qualBtns.length; i++) {
+        (function(btn){
+            btn.addEventListener('click', function() {
+                state.voiceQuality = btn.dataset.quality;
+                for (var j = 0; j < qualBtns.length; j++) qualBtns[j].classList.remove('active');
+                btn.classList.add('active');
+                savePreferences();
+            });
+        })(qualBtns[i]);
+    }
+
+    /* ── Realm settings ──────────────────────────────── */
+    var speechRegionEl = document.getElementById('speechRegion');
+    var ttsRegionEl    = document.getElementById('ttsRegion');
+    var ttsKeyEl       = document.getElementById('ttsKey');
+    var googleRegionEl = document.getElementById('googleRegion');
+    var awsRegionEl    = document.getElementById('awsRegion');
+    var autoSpeakEl    = document.getElementById('autoSpeakToggle');
+    var realmToggleEl  = document.getElementById('realmToggle');
+    var realmSection   = document.getElementById('realmSection');
+
+    // Collapse/expand
+    realmToggleEl.addEventListener('click', function() {
+        realmSection.classList.toggle('collapsed');
+        savePreferences();
+    });
+
+    // Region changes send configure to server
+    function sendConfigure(type, args) {
+        if (state.connected && state.ws && state.ws.readyState === WebSocket.OPEN) {
+            var msg = { type: type };
+            for (var k in args) msg[k] = args[k];
+            state.ws.send(JSON.stringify(msg));
+        }
+    }
+
+    speechRegionEl.addEventListener('change', function() {
+        state.speechRegion = speechRegionEl.value;
+        sendConfigure('configure_speech', { region: speechRegionEl.value });
+        savePreferences();
+    });
+    ttsRegionEl.addEventListener('change', function() {
+        state.ttsRegion = ttsRegionEl.value;
+        sendConfigure('configure_speech', { tts_region: ttsRegionEl.value || null });
+        savePreferences();
+    });
+    var _ttsKeyTimer = null;
+    ttsKeyEl.addEventListener('input', function() {
+        clearTimeout(_ttsKeyTimer);
+        _ttsKeyTimer = setTimeout(function() {
+            state.ttsKey = ttsKeyEl.value;
+            sendConfigure('configure_speech', { tts_key: ttsKeyEl.value || null });
+            savePreferences();
+        }, 800);
+    });
+    googleRegionEl.addEventListener('change', function() {
+        state.googleRegion = googleRegionEl.value;
+        sendConfigure('configure_chat', { google_region: googleRegionEl.value });
+        savePreferences();
+    });
+    awsRegionEl.addEventListener('change', function() {
+        state.awsRegion = awsRegionEl.value;
+        sendConfigure('configure_chat', { aws_region: awsRegionEl.value });
+        savePreferences();
+    });
+    autoSpeakEl.addEventListener('click', function() {
+        state.autoSpeak = !state.autoSpeak;
+        autoSpeakEl.classList.toggle('active', state.autoSpeak);
+        savePreferences();
+    });
+
+    function updateStatusDisplay() {
+        modelDisplay.textContent = state.multiChat
+            ? Array.from(state.selectedModels).join(', ')
+            : state.selectedModel;
+        var voice = VOICES.find(function(v){ return v.id === state.selectedVoice; });
+        voiceDisplay.textContent = voice ? voice.name : state.selectedVoice;
+        savePreferences();
+    }
+
+    /* ── Persist spellbook preferences ────────────────── */
+    function savePreferences() {
+        try {
+            localStorage.setItem('oracle-prefs', JSON.stringify({
+                selectedModel: state.selectedModel,
+                selectedModels: Array.from(state.selectedModels),
+                multiChat: state.multiChat,
+                selectedVoice: state.selectedVoice,
+                voiceQuality: state.voiceQuality,
+                autoSpeak: state.autoSpeak,
+                speechRegion: state.speechRegion || 'westus',
+                ttsRegion: state.ttsRegion || '',
+                ttsKey: state.ttsKey || '',
+                googleRegion: state.googleRegion || 'global',
+                awsRegion: state.awsRegion || 'us-east-1',
+                realmCollapsed: realmSection.classList.contains('collapsed'),
+            }));
+        } catch(e) {}
+    }
+    function loadPreferences() {
+        try {
+            var saved = JSON.parse(localStorage.getItem('oracle-prefs'));
+            if (!saved) return;
+            if (saved.selectedModel) state.selectedModel = saved.selectedModel;
+            if (saved.selectedModels) state.selectedModels = new Set(saved.selectedModels);
+            if (saved.multiChat !== undefined) state.multiChat = saved.multiChat;
+            if (saved.selectedVoice) state.selectedVoice = saved.selectedVoice;
+            if (saved.voiceQuality) state.voiceQuality = saved.voiceQuality;
+            if (saved.autoSpeak !== undefined) state.autoSpeak = saved.autoSpeak;
+            if (saved.speechRegion) state.speechRegion = saved.speechRegion;
+            if (saved.ttsRegion !== undefined) state.ttsRegion = saved.ttsRegion;
+            if (saved.ttsKey !== undefined) state.ttsKey = saved.ttsKey;
+            if (saved.googleRegion) state.googleRegion = saved.googleRegion;
+            if (saved.awsRegion) state.awsRegion = saved.awsRegion;
+            if (saved.realmCollapsed) realmSection.classList.add('collapsed');
+        } catch(e) {}
+    }
+    loadPreferences();
+    // Refresh UI with loaded prefs
+    renderModels();
+    renderVoices();
+    if (state.multiChat) multiToggle.classList.add('active');
+    for (var qi = 0; qi < qualBtns.length; qi++) {
+        qualBtns[qi].classList.toggle('active', qualBtns[qi].dataset.quality === state.voiceQuality);
+    }
+    // Restore realm selects
+    speechRegionEl.value = state.speechRegion || 'westus';
+    ttsRegionEl.value = state.ttsRegion || '';
+    ttsKeyEl.value = state.ttsKey || '';
+    googleRegionEl.value = state.googleRegion || 'global';
+    awsRegionEl.value = state.awsRegion || 'us-east-1';
+    autoSpeakEl.classList.toggle('active', !!state.autoSpeak);
+    updateStatusDisplay();
+
+    function connectWS() {
+        var wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+        try {
+            state.ws = new WebSocket(wsUrl);
+            state.ws.onopen = function() {
+                statusText.textContent = 'Handshaking...';
+            };
+            state.ws.onmessage = function(e) {
+                try {
+                    var data = JSON.parse(e.data);
+                    if (data.type === 'connected') {
+                        state.connected = true;
+                        state.chatReady = data.chat_ready;
+                        state.speechReady = data.speech_ready;
+                        statusDot.className = 'status-dot connected';
+                        var parts = [];
+                        if (data.chat_ready) parts.push('oracles');
+                        if (data.speech_ready) parts.push('voice');
+                        statusText.textContent = 'Ethereal link: ' + (parts.join(' + ') || 'connected');
+                        addMessage('system', 'The Oracle awakens.' +
+                            (data.chat_ready ? ' Chat oracles online.' : '') +
+                            (data.speech_ready ? ' Voice enchantments ready.' : ''));
+                        // Send saved realm settings on connect
+                        if (state.speechRegion) sendConfigure('configure_speech', { region: state.speechRegion });
+                        if (state.ttsRegion) sendConfigure('configure_speech', { tts_region: state.ttsRegion });
+                        if (state.ttsKey) sendConfigure('configure_speech', { tts_key: state.ttsKey });
+                        if (state.googleRegion) sendConfigure('configure_chat', { google_region: state.googleRegion });
+                        if (state.awsRegion) sendConfigure('configure_chat', { aws_region: state.awsRegion });
+                    } else if (data.type === 'response') {
+                        removeThinking();
+                        addMessage('ai', data.text, data.model);
+                        if (state.autoSpeak && state.speechReady)
+                            state.ws.send(JSON.stringify({
+                                type: 'speak', text: data.text,
+                                voice: state.selectedVoice, quality: state.voiceQuality
+                            }));
+                    } else if (data.type === 'multi_response') {
+                        removeThinking();
+                        for (var i = 0; i < data.responses.length; i++)
+                            addMessage('ai', data.responses[i].text, data.responses[i].model);
+                    } else if (data.type === 'error') {
+                        removeThinking();
+                        addMessage('system', 'The Oracle falters: ' + data.message);
+                    } else if (data.type === 'voice_activity') {
+                        setVoiceVU(data.vu || 0, data.mode);
+                        // Stream partial listen text into input
+                        if (data.mode === 'listen') {
+                            var raw = data.text || '';
+                            var pct = data.progress || 0;
+                            var partial = raw
+                                .replace(/[\u{1F3A4}\u{1F9E0}\u{2705}\u{23F1}\u{FE0F}]/gu, '')
+                                .replace(/[▓░▒█▏▎▍▌▋▊▉▂▃▄▅▆▇█]+/g, '')
+                                .replace(/\d+s\b/g, '')
+                                .replace(/Listening\.\.\./gi, '')
+                                .replace(/Transcribing\.\.\./gi, '')
+                                .replace(/Done/gi, '')
+                                .trim();
+                            if (partial && partial.length > 1 && pct < 100) {
+                                chatInput.value = partial;
+                                autoResizeInput();
+                            }
+                        }
+                    } else if (data.type === 'listen_result') {
+                        state.isRecording = false;
+                        voiceBtn.classList.remove('recording');
+                        if (data.text && data.text !== '(no speech detected)') {
+                            chatInput.value = data.text;
+                            autoResizeInput();
+                        }
+                    } else if (data.type === 'speak_result') {
+                        speakBtn.classList.remove('active');
+                    } else if (data.type === 'converse_result') {
+                        state.isRecording = false;
+                        converseBtn.classList.remove('active');
+                        if (data.text && data.text !== '(no speech detected)') {
+                            chatInput.value = data.text;
+                            autoResizeInput();
+                        }
+                    } else if (data.type === 'talk_result') {
+                        talkBtn.classList.remove('active');
+                        if (data.text && data.text !== '(no speech detected)') {
+                            chatInput.value = data.text;
+                            autoResizeInput();
+                            addMessage('system', 'Voice reply: ' + data.text);
+                        }
+                    }
+                } catch(err) { /* non-JSON message */ }
+            };
+            state.ws.onclose = function() {
+                state.connected = false;
+                statusDot.className = 'status-dot disconnected';
+                statusText.textContent = 'Ethereal link severed';
+                setTimeout(connectWS, 5000);
+            };
+            state.ws.onerror = function() {
+                state.connected = false;
+                statusDot.className = 'status-dot disconnected';
+                statusText.textContent = 'Awaiting ethereal connection';
+            };
+        } catch(err) { setTimeout(connectWS, 5000); }
+    }
+
+    function init() {
+        initStarfield();
+        initParticles();
+        renderModels();
+        renderVoices();
+        updateStatusDisplay();
+        connectWS();
+        setTimeout(function(){ addMessage('system', 'The crystal ball shimmers to life...'); }, 600);
+        setTimeout(function(){
+            addMessage('ai',
+                'Welcome, seeker. I am the Oracle \u2014 a bridge to many minds across the ethereal planes. Speak your question, or open the **Grimoire** to choose which oracles shall answer your call.',
+                state.selectedModel
+            );
+        }, 1800);
+        setTimeout(function(){ chatInput.focus(); }, 2200);
+    }
+
+    init();
+    </script>
+</body>
+</html>
