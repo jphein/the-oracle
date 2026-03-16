@@ -407,6 +407,13 @@
             50% { box-shadow: 0 0 22px rgba(197,165,90,0.35); }
         }
         .voice-action svg { width: 15px; height: 15px; }
+        .voice-action.autospeak-btn {
+            background: rgba(197,165,90,0.06); border-color: rgba(197,165,90,0.15); color: rgba(197,165,90,0.4);
+        }
+        .voice-action.autospeak-btn:hover, .voice-action.autospeak-btn.active {
+            background: rgba(197,165,90,0.15); border-color: rgba(197,165,90,0.5); color: #c5a55a;
+            box-shadow: 0 0 10px rgba(197,165,90,0.2);
+        }
         .spellbook-toggle {
             position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
             z-index: 100; cursor: pointer; animation: bookFloat 5s ease-in-out infinite;
@@ -472,12 +479,124 @@
         .spine-rune { font-size: 0.9rem; color: var(--ancient-gold); opacity: 0.5; text-shadow: 0 0 6px rgba(197,165,90,0.3); }
         .book-pages { flex: 1; display: flex; overflow: hidden; border-radius: 0 14px 14px 0; }
         .book-page {
-            flex: 1; padding: 24px 20px; overflow-y: auto;
+            flex: 1; padding: 24px 20px; overflow-y: auto; position: relative;
             background: linear-gradient(180deg, rgba(240,228,200,0.04) 0%, rgba(200,184,144,0.02) 100%);
+            scrollbar-width: none;
         }
-        .book-page:first-child { border-right: 1px solid rgba(197,165,90,0.08); }
-        .book-page { scrollbar-width: none; }
         .book-page::-webkit-scrollbar { display: none; }
+        .book-page:first-child { border-right: 1px solid rgba(197,165,90,0.08); }
+        /* Right page container — holds two pages that swap */
+        .book-page-right {
+            flex: 1; position: relative; overflow: hidden;
+        }
+        .book-page-right .book-page {
+            position: absolute; inset: 0;
+            padding-right: 40px; /* room for edge navigation strip */
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .book-page-right .book-page.hidden-page {
+            opacity: 0; pointer-events: none; transform: translateX(30px);
+        }
+        .book-page-right .book-page.visible-page {
+            opacity: 1; pointer-events: all; transform: translateX(0);
+        }
+        /* Page turn edge — fixed right-edge strip on the book-page-right container */
+        .page-turn-edge {
+            position: absolute; top: 0; right: 0; width: 32px; height: 100%;
+            z-index: 10; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: linear-gradient(to left, rgba(197,165,90,0.06), transparent);
+            border-left: 1px solid rgba(197,165,90,0.06);
+            transition: all 0.4s ease;
+        }
+        .page-turn-edge:hover {
+            width: 38px;
+            background: linear-gradient(to left, rgba(197,165,90,0.14), rgba(197,165,90,0.02));
+            border-left-color: rgba(197,165,90,0.2);
+            box-shadow: inset 4px 0 20px rgba(197,165,90,0.06);
+        }
+        .page-turn-edge .edge-label {
+            writing-mode: vertical-rl; text-orientation: mixed;
+            font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.18em;
+            color: rgba(197,165,90,0.3); text-transform: uppercase;
+            transition: all 0.4s;
+        }
+        .page-turn-edge:hover .edge-label {
+            color: var(--ancient-gold);
+            text-shadow: 0 0 12px rgba(197,165,90,0.5);
+        }
+        .page-turn-edge .edge-rune {
+            font-size: 0.7rem; color: rgba(197,165,90,0.2);
+            margin-bottom: 8px; transition: all 0.4s;
+            animation: edgeRunePulse 4s ease-in-out infinite;
+        }
+        .page-turn-edge:hover .edge-rune {
+            color: var(--ancient-gold);
+            text-shadow: 0 0 10px rgba(197,165,90,0.6), 0 0 25px rgba(197,165,90,0.2);
+            animation: none;
+        }
+        @keyframes edgeRunePulse {
+            0%, 100% { opacity: 0.35; transform: translateY(0); }
+            50% { opacity: 0.8; transform: translateY(-3px); }
+        }
+        /* Back variant — left edge */
+        .page-turn-edge.back {
+            right: auto; left: 0;
+            background: linear-gradient(to right, rgba(197,165,90,0.06), transparent);
+            border-left: none; border-right: 1px solid rgba(197,165,90,0.06);
+        }
+        .page-turn-edge.back:hover {
+            background: linear-gradient(to right, rgba(197,165,90,0.14), rgba(197,165,90,0.02));
+            border-right-color: rgba(197,165,90,0.2);
+            box-shadow: inset -4px 0 20px rgba(197,165,90,0.06);
+        }
+        .page-turn-edge.back .edge-label { writing-mode: vertical-lr; transform: rotate(180deg); }
+        /* Sparkle trail on the edge */
+        .page-turn-edge::before {
+            content: ''; position: absolute; top: 20%; bottom: 20%; width: 1px;
+            right: 0; background: linear-gradient(to bottom,
+                transparent, rgba(197,165,90,0.3) 30%, rgba(197,165,90,0.5) 50%,
+                rgba(197,165,90,0.3) 70%, transparent
+            );
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .page-turn-edge:hover::before { opacity: 1; }
+        .page-turn-edge.back::before { right: auto; left: 0; }
+        /* Sparkle dots that drift on hover */
+        .page-turn-edge .edge-sparkles {
+            position: absolute; top: 0; bottom: 0; width: 100%; pointer-events: none;
+            overflow: hidden; opacity: 0; transition: opacity 0.5s;
+        }
+        .page-turn-edge:hover .edge-sparkles { opacity: 1; }
+        .page-turn-edge .edge-sparkles::before,
+        .page-turn-edge .edge-sparkles::after {
+            content: '✦'; position: absolute; font-size: 0.45rem;
+            color: var(--ancient-gold); opacity: 0;
+        }
+        .page-turn-edge:hover .edge-sparkles::before {
+            animation: sparkleFloat 2s ease-in-out infinite;
+            right: 8px; top: 25%;
+        }
+        .page-turn-edge:hover .edge-sparkles::after {
+            animation: sparkleFloat 2s ease-in-out 0.7s infinite;
+            right: 12px; top: 65%;
+        }
+        @keyframes sparkleFloat {
+            0% { opacity: 0; transform: translateY(0) scale(0.5); }
+            30% { opacity: 1; transform: translateY(-8px) scale(1); }
+            100% { opacity: 0; transform: translateY(-20px) scale(0.3); }
+        }
+        /* Page number */
+        .page-num {
+            position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+            font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.2em;
+            color: rgba(197,165,90,0.18); pointer-events: none;
+        }
+        /* Decorative page divider */
+        .page-ornament {
+            text-align: center; margin: 12px 0 16px; font-size: 0.65rem;
+            color: rgba(197,165,90,0.15); letter-spacing: 0.5em;
+        }
         .page-title {
             font-family: 'Cinzel Decorative', serif; font-size: 0.95rem;
             color: var(--ancient-gold); letter-spacing: 0.1em; margin-bottom: 4px;
@@ -549,13 +668,7 @@
         }
         .quality-btn.active { background: rgba(123,47,190,0.12); border-color: rgba(123,47,190,0.3); color: #c090e8; }
         /* ── Realm settings ────────────────────────────── */
-        .realm-section { margin-top: 20px; border-top: 1px solid rgba(197,165,90,0.08); padding-top: 14px; }
-        .realm-section .page-title { font-size: 0.8rem; margin-bottom: 2px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .realm-section .page-title::after {
-            content: '\25BE'; font-size: 0.6rem; transition: transform 0.3s; opacity: 0.5;
-        }
-        .realm-section.collapsed .page-title::after { transform: rotate(-90deg); }
-        .realm-section.collapsed .realm-body { display: none; }
+        /* Realm groups spacing */
         .realm-group { margin-bottom: 12px; }
         .realm-group-label {
             font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
@@ -581,6 +694,8 @@
         }
         .realm-select:focus { outline: none; border-color: rgba(197,165,90,0.3); }
         .realm-select option { background: #1a1008; color: var(--text-light); }
+        .realm-key { font-size: 0.65rem; letter-spacing: 0.02em; }
+        .realm-key::placeholder { color: rgba(197,165,90,0.25); font-style: italic; }
         .realm-toggle {
             display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
         }
@@ -594,9 +709,9 @@
         .spellbook-close {
             position: absolute; top: 10px; right: 14px; width: 28px; height: 28px;
             border-radius: 50%; border: 1px solid rgba(197,165,90,0.15);
-            background: rgba(0,0,0,0.3); color: var(--text-dim); font-size: 0.9rem;
+            background: rgba(0,0,0,0.5); color: var(--text-dim); font-size: 0.9rem;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.25s; z-index: 10;
+            transition: all 0.25s; z-index: 20;
         }
         .spellbook-close:hover { color: var(--ancient-gold); border-color: rgba(197,165,90,0.3); }
         .status-bar {
@@ -688,6 +803,12 @@
                         <path d="M15.54 15a4 4 0 0 0 0-5.66"/>
                     </svg>
                 </button>
+                <button class="voice-action autospeak-btn" id="autoSpeakBtn" title="Auto-Speak — read all oracle responses aloud">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                        <line x1="4" y1="22" x2="4" y2="15"/>
+                    </svg>
+                </button>
             </div>
             <div class="input-scroll">
                 <textarea id="chatInput" placeholder="Speak your incantation..." rows="1"></textarea>
@@ -723,29 +844,34 @@
                 <div class="book-page" id="modelsPage">
                     <div class="page-title">Oracles</div>
                     <div class="page-subtitle">choose the minds that answer your call</div>
+                    <div class="page-ornament">&#10043; &#10043; &#10043;</div>
                     <div class="multi-chat-toggle">
                         <div class="toggle-switch" id="multiChatToggle"></div>
                         <span>Multi-Oracle Ritual</span>
                     </div>
                     <div id="modelList"></div>
+                    <div class="page-num">I</div>
                 </div>
-                <div class="book-page" id="voicesPage">
-                    <div class="page-title">Enchantments</div>
-                    <div class="page-subtitle">the voice of the oracle</div>
-                    <div class="voice-quality-toggle">
-                        <button class="quality-btn active" data-quality="fast">Swift</button>
-                        <button class="quality-btn" data-quality="hd">Resonant HD</button>
+                <div class="book-page-right">
+                    <div class="book-page visible-page" id="voicesPage">
+                        <div class="page-title">Enchantments</div>
+                        <div class="page-subtitle">the voice of the oracle</div>
+                        <div class="page-ornament">&#10043; &#10043; &#10043;</div>
+                        <div class="voice-quality-toggle">
+                            <button class="quality-btn active" data-quality="fast">Swift</button>
+                            <button class="quality-btn" data-quality="hd">Resonant HD</button>
+                        </div>
+                        <div class="voice-list" id="voiceList"></div>
+                        <div class="page-num">II</div>
                     </div>
-                    <div class="voice-list" id="voiceList"></div>
-
-                    <div class="realm-section" id="realmSection">
-                        <div class="page-title" id="realmToggle">Realms</div>
+                    <div class="book-page hidden-page" id="realmsPage">
+                        <div class="page-title">Realms</div>
                         <div class="page-subtitle">gateways to the planes of intelligence</div>
-                        <div class="realm-body">
+                        <div class="page-ornament">&#10043; &#10043; &#10043;</div>
                             <div class="realm-group">
                                 <div class="realm-group-label">&#9670; Azure Speech &#8212; Listening</div>
                                 <div class="realm-row">
-                                    <span class="realm-label">STT Region</span>
+                                    <span class="realm-label">Region</span>
                                     <select class="realm-select" id="speechRegion">
                                         <option value="westus">West US</option>
                                         <option value="westus2">West US 2</option>
@@ -757,11 +883,15 @@
                                         <option value="southeastasia">Southeast Asia</option>
                                     </select>
                                 </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Key</span>
+                                    <input type="password" class="realm-select realm-key" id="speechKey" placeholder="Azure Speech API key" autocomplete="off">
+                                </div>
                             </div>
                             <div class="realm-group">
                                 <div class="realm-group-label">&#9670; Azure Speech &#8212; Voice</div>
                                 <div class="realm-row">
-                                    <span class="realm-label">TTS Region</span>
+                                    <span class="realm-label">Region</span>
                                     <select class="realm-select" id="ttsRegion">
                                         <option value="">(same as STT)</option>
                                         <option value="westus">West US</option>
@@ -775,8 +905,19 @@
                                     </select>
                                 </div>
                                 <div class="realm-row">
-                                    <span class="realm-label">TTS Key</span>
-                                    <input type="password" class="realm-select" id="ttsKey" placeholder="(same as STT key)" autocomplete="off" style="font-size:0.65rem;">
+                                    <span class="realm-label">Key</span>
+                                    <input type="password" class="realm-select realm-key" id="ttsKey" placeholder="(same as STT key)" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="realm-group">
+                                <div class="realm-group-label">&#9670; Azure AI &#8212; Chat Endpoint</div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Endpoint</span>
+                                    <input type="text" class="realm-select realm-key" id="chatEndpoint" placeholder="https://....services.ai.azure.com" autocomplete="off">
+                                </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Key</span>
+                                    <input type="password" class="realm-select realm-key" id="chatApiKey" placeholder="Azure AI API key" autocomplete="off">
                                 </div>
                             </div>
                             <div class="realm-group">
@@ -793,6 +934,14 @@
                                         <option value="asia-southeast1">Asia SE 1</option>
                                     </select>
                                 </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">API Key</span>
+                                    <input type="password" class="realm-select realm-key" id="googleApiKey" placeholder="Google API key" autocomplete="off">
+                                </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Project</span>
+                                    <input type="text" class="realm-select realm-key" id="googleProject" placeholder="GCP project number" autocomplete="off">
+                                </div>
                             </div>
                             <div class="realm-group">
                                 <div class="realm-group-label">&#9670; AWS Bedrock</div>
@@ -807,15 +956,27 @@
                                         <option value="ap-northeast-1">AP NE 1</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="realm-group">
-                                <div class="realm-group-label">&#9670; Auto-Speak</div>
-                                <div class="realm-toggle">
-                                    <div class="toggle-switch" id="autoSpeakToggle"></div>
-                                    <span class="realm-toggle-label">Read oracle responses aloud</span>
+                                <div class="realm-row">
+                                    <span class="realm-label">Access Key</span>
+                                    <input type="password" class="realm-select realm-key" id="awsAccessKey" placeholder="AWS Access Key ID" autocomplete="off">
+                                </div>
+                                <div class="realm-row">
+                                    <span class="realm-label">Secret Key</span>
+                                    <input type="password" class="realm-select realm-key" id="awsSecretKey" placeholder="AWS Secret Access Key" autocomplete="off">
                                 </div>
                             </div>
-                        </div>
+                        <div class="page-num">III</div>
+                    </div>
+                    <!-- Page turn edge strips — fixed overlays, not inside scrolling pages -->
+                    <div class="page-turn-edge" id="pageTurnForward">
+                        <span class="edge-rune">&#9830;</span>
+                        <span class="edge-label">Realms</span>
+                        <span class="edge-sparkles"></span>
+                    </div>
+                    <div class="page-turn-edge back" id="pageTurnBack" style="display:none;">
+                        <span class="edge-rune">&#9830;</span>
+                        <span class="edge-label">Enchantments</span>
+                        <span class="edge-sparkles"></span>
                     </div>
                 </div>
             </div>
@@ -841,6 +1002,9 @@
         voiceQuality: 'hd',
         isRecording: false,
         autoSpeak: false,
+        ttsRegion: 'eastus',
+        ttsKey: '',
+        speechRegion: 'westus',
         chatReady: false,
         speechReady: false,
         ws: null,
@@ -1287,6 +1451,34 @@
     spellClose.addEventListener('click', closeSpellbook);
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSpellbook(); });
 
+    // Page turn — swap right page between Enchantments and Realms
+    var voicesPageEl = document.getElementById('voicesPage');
+    var realmsPageEl = document.getElementById('realmsPage');
+    var pageTurnFwd  = document.getElementById('pageTurnForward');
+    var pageTurnBack = document.getElementById('pageTurnBack');
+    function showRealms() {
+        voicesPageEl.classList.remove('visible-page');
+        voicesPageEl.classList.add('hidden-page');
+        realmsPageEl.classList.remove('hidden-page');
+        realmsPageEl.classList.add('visible-page');
+        pageTurnFwd.style.display = 'none';
+        pageTurnBack.style.display = '';
+        state.pageFlipped = true;
+        savePreferences();
+    }
+    function showEnchantments() {
+        realmsPageEl.classList.remove('visible-page');
+        realmsPageEl.classList.add('hidden-page');
+        voicesPageEl.classList.remove('hidden-page');
+        voicesPageEl.classList.add('visible-page');
+        pageTurnFwd.style.display = '';
+        pageTurnBack.style.display = 'none';
+        state.pageFlipped = false;
+        savePreferences();
+    }
+    pageTurnFwd.addEventListener('click', showRealms);
+    pageTurnBack.addEventListener('click', showEnchantments);
+
     function renderModels() {
         modelListEl.textContent = '';
         var groups = Object.keys(MODELS);
@@ -1385,19 +1577,19 @@
 
     /* ── Realm settings ──────────────────────────────── */
     var speechRegionEl = document.getElementById('speechRegion');
+    var speechKeyEl    = document.getElementById('speechKey');
     var ttsRegionEl    = document.getElementById('ttsRegion');
     var ttsKeyEl       = document.getElementById('ttsKey');
+    var chatEndpointEl = document.getElementById('chatEndpoint');
+    var chatApiKeyEl   = document.getElementById('chatApiKey');
     var googleRegionEl = document.getElementById('googleRegion');
+    var googleApiKeyEl = document.getElementById('googleApiKey');
+    var googleProjectEl= document.getElementById('googleProject');
     var awsRegionEl    = document.getElementById('awsRegion');
-    var autoSpeakEl    = document.getElementById('autoSpeakToggle');
-    var realmToggleEl  = document.getElementById('realmToggle');
-    var realmSection   = document.getElementById('realmSection');
-
-    // Collapse/expand
-    realmToggleEl.addEventListener('click', function() {
-        realmSection.classList.toggle('collapsed');
-        savePreferences();
-    });
+    var awsAccessKeyEl = document.getElementById('awsAccessKey');
+    var awsSecretKeyEl = document.getElementById('awsSecretKey');
+    var autoSpeakEl    = document.getElementById('autoSpeakBtn');
+    var realmSection   = document.getElementById('realmsPage');
 
     // Region changes send configure to server
     function sendConfigure(type, args) {
@@ -1408,35 +1600,53 @@
         }
     }
 
+    // Debounced key input helper
+    function debouncedKey(el, stateKey, configType, configKey, delay) {
+        var timer = null;
+        el.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                state[stateKey] = el.value;
+                var args = {};
+                args[configKey] = el.value || null;
+                sendConfigure(configType, args);
+                savePreferences();
+            }, delay || 800);
+        });
+    }
+
     speechRegionEl.addEventListener('change', function() {
         state.speechRegion = speechRegionEl.value;
         sendConfigure('configure_speech', { region: speechRegionEl.value });
         savePreferences();
     });
+    debouncedKey(speechKeyEl, 'speechKey', 'configure_speech', 'key');
+
     ttsRegionEl.addEventListener('change', function() {
         state.ttsRegion = ttsRegionEl.value;
         sendConfigure('configure_speech', { tts_region: ttsRegionEl.value || null });
         savePreferences();
     });
-    var _ttsKeyTimer = null;
-    ttsKeyEl.addEventListener('input', function() {
-        clearTimeout(_ttsKeyTimer);
-        _ttsKeyTimer = setTimeout(function() {
-            state.ttsKey = ttsKeyEl.value;
-            sendConfigure('configure_speech', { tts_key: ttsKeyEl.value || null });
-            savePreferences();
-        }, 800);
-    });
+    debouncedKey(ttsKeyEl, 'ttsKey', 'configure_speech', 'tts_key');
+
+    debouncedKey(chatEndpointEl, 'chatEndpoint', 'configure_chat', 'endpoint');
+    debouncedKey(chatApiKeyEl, 'chatApiKey', 'configure_chat', 'api_key');
+
     googleRegionEl.addEventListener('change', function() {
         state.googleRegion = googleRegionEl.value;
         sendConfigure('configure_chat', { google_region: googleRegionEl.value });
         savePreferences();
     });
+    debouncedKey(googleApiKeyEl, 'googleApiKey', 'configure_chat', 'google_api_key');
+    debouncedKey(googleProjectEl, 'googleProject', 'configure_chat', 'google_project');
+
     awsRegionEl.addEventListener('change', function() {
         state.awsRegion = awsRegionEl.value;
         sendConfigure('configure_chat', { aws_region: awsRegionEl.value });
         savePreferences();
     });
+    debouncedKey(awsAccessKeyEl, 'awsAccessKey', 'configure_chat', 'aws_access_key');
+    debouncedKey(awsSecretKeyEl, 'awsSecretKey', 'configure_chat', 'aws_secret_key');
     autoSpeakEl.addEventListener('click', function() {
         state.autoSpeak = !state.autoSpeak;
         autoSpeakEl.classList.toggle('active', state.autoSpeak);
@@ -1463,11 +1673,18 @@
                 voiceQuality: state.voiceQuality,
                 autoSpeak: state.autoSpeak,
                 speechRegion: state.speechRegion || 'westus',
+                speechKey: state.speechKey || '',
                 ttsRegion: state.ttsRegion || '',
                 ttsKey: state.ttsKey || '',
+                chatEndpoint: state.chatEndpoint || '',
+                chatApiKey: state.chatApiKey || '',
                 googleRegion: state.googleRegion || 'global',
+                googleApiKey: state.googleApiKey || '',
+                googleProject: state.googleProject || '',
                 awsRegion: state.awsRegion || 'us-east-1',
-                realmCollapsed: realmSection.classList.contains('collapsed'),
+                awsAccessKey: state.awsAccessKey || '',
+                awsSecretKey: state.awsSecretKey || '',
+                pageFlipped: !!state.pageFlipped,
             }));
         } catch(e) {}
     }
@@ -1482,11 +1699,18 @@
             if (saved.voiceQuality) state.voiceQuality = saved.voiceQuality;
             if (saved.autoSpeak !== undefined) state.autoSpeak = saved.autoSpeak;
             if (saved.speechRegion) state.speechRegion = saved.speechRegion;
+            if (saved.speechKey) state.speechKey = saved.speechKey;
             if (saved.ttsRegion !== undefined) state.ttsRegion = saved.ttsRegion;
             if (saved.ttsKey !== undefined) state.ttsKey = saved.ttsKey;
+            if (saved.chatEndpoint) state.chatEndpoint = saved.chatEndpoint;
+            if (saved.chatApiKey) state.chatApiKey = saved.chatApiKey;
             if (saved.googleRegion) state.googleRegion = saved.googleRegion;
+            if (saved.googleApiKey) state.googleApiKey = saved.googleApiKey;
+            if (saved.googleProject) state.googleProject = saved.googleProject;
             if (saved.awsRegion) state.awsRegion = saved.awsRegion;
-            if (saved.realmCollapsed) realmSection.classList.add('collapsed');
+            if (saved.awsAccessKey) state.awsAccessKey = saved.awsAccessKey;
+            if (saved.awsSecretKey) state.awsSecretKey = saved.awsSecretKey;
+            if (saved.pageFlipped !== undefined) state.pageFlipped = saved.pageFlipped;
         } catch(e) {}
     }
     loadPreferences();
@@ -1497,13 +1721,22 @@
     for (var qi = 0; qi < qualBtns.length; qi++) {
         qualBtns[qi].classList.toggle('active', qualBtns[qi].dataset.quality === state.voiceQuality);
     }
-    // Restore realm selects
+    // Restore realm selects and keys
     speechRegionEl.value = state.speechRegion || 'westus';
+    speechKeyEl.value = state.speechKey || '';
     ttsRegionEl.value = state.ttsRegion || '';
     ttsKeyEl.value = state.ttsKey || '';
+    chatEndpointEl.value = state.chatEndpoint || '';
+    chatApiKeyEl.value = state.chatApiKey || '';
     googleRegionEl.value = state.googleRegion || 'global';
+    googleApiKeyEl.value = state.googleApiKey || '';
+    googleProjectEl.value = state.googleProject || '';
     awsRegionEl.value = state.awsRegion || 'us-east-1';
+    awsAccessKeyEl.value = state.awsAccessKey || '';
+    awsSecretKeyEl.value = state.awsSecretKey || '';
     autoSpeakEl.classList.toggle('active', !!state.autoSpeak);
+    // Restore page flip
+    if (state.pageFlipped) showRealms();
     updateStatusDisplay();
 
     function connectWS() {
@@ -1529,11 +1762,22 @@
                             (data.chat_ready ? ' Chat oracles online.' : '') +
                             (data.speech_ready ? ' Voice enchantments ready.' : ''));
                         // Send saved realm settings on connect
-                        if (state.speechRegion) sendConfigure('configure_speech', { region: state.speechRegion });
-                        if (state.ttsRegion) sendConfigure('configure_speech', { tts_region: state.ttsRegion });
-                        if (state.ttsKey) sendConfigure('configure_speech', { tts_key: state.ttsKey });
-                        if (state.googleRegion) sendConfigure('configure_chat', { google_region: state.googleRegion });
-                        if (state.awsRegion) sendConfigure('configure_chat', { aws_region: state.awsRegion });
+                        var speechArgs = {};
+                        if (state.speechRegion) speechArgs.region = state.speechRegion;
+                        if (state.speechKey) speechArgs.key = state.speechKey;
+                        if (state.ttsRegion) speechArgs.tts_region = state.ttsRegion;
+                        if (state.ttsKey) speechArgs.tts_key = state.ttsKey;
+                        if (Object.keys(speechArgs).length) sendConfigure('configure_speech', speechArgs);
+                        var chatArgs = {};
+                        if (state.chatEndpoint) chatArgs.endpoint = state.chatEndpoint;
+                        if (state.chatApiKey) chatArgs.api_key = state.chatApiKey;
+                        if (state.googleRegion) chatArgs.google_region = state.googleRegion;
+                        if (state.googleApiKey) chatArgs.google_api_key = state.googleApiKey;
+                        if (state.googleProject) chatArgs.google_project = state.googleProject;
+                        if (state.awsRegion) chatArgs.aws_region = state.awsRegion;
+                        if (state.awsAccessKey) chatArgs.aws_access_key = state.awsAccessKey;
+                        if (state.awsSecretKey) chatArgs.aws_secret_key = state.awsSecretKey;
+                        if (Object.keys(chatArgs).length) sendConfigure('configure_chat', chatArgs);
                     } else if (data.type === 'response') {
                         removeThinking();
                         addMessage('ai', data.text, data.model);
