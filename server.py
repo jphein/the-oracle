@@ -11,6 +11,7 @@ Usage:
 
 import asyncio
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -27,11 +28,13 @@ from fastmcp.client.transports import StdioTransport
 SCRIPT_DIR = Path(__file__).resolve().parent
 INDEX_HTML = SCRIPT_DIR / "index.html"
 
-CHAT_SCRIPT = Path.home() / "Projects" / "cloud-chat-assistant" / "mcp_cloud_chat.py"
-CHAT_PYTHON = Path.home() / "Projects" / "cloud-chat-assistant" / "venv" / "bin" / "python3"
+CHAT_DIR = Path(os.environ.get("ORACLE_CLOUD_CHAT_DIR", Path.home() / "Projects" / "cloud-chat-assistant"))
+CHAT_SCRIPT = CHAT_DIR / "mcp_cloud_chat.py"
+CHAT_PYTHON = CHAT_DIR / "venv" / "bin" / "python3"
 
-SPEECH_SCRIPT = Path.home() / "Projects" / "speech-to-cli" / "mcp_speech.py"
-SPEECH_PYTHON = Path("/usr/bin/python3")  # speech-to-cli uses system Python
+SPEECH_DIR = Path(os.environ.get("ORACLE_SPEECH_DIR", Path.home() / "Projects" / "speech-to-cli"))
+SPEECH_SCRIPT = SPEECH_DIR / "mcp_speech.py"
+SPEECH_PYTHON = Path(os.environ.get("ORACLE_SPEECH_PYTHON", "/usr/bin/python3"))
 
 PORT = 8778
 
@@ -448,7 +451,12 @@ async def start_proxy(app):
         except Exception as exc:
             print(f"  [chat] Failed to mount: {exc}")
     else:
-        print(f"  [chat] Not found: {CHAT_SCRIPT}")
+        if not CHAT_DIR.exists():
+            print(f"  [chat] Directory not found: {CHAT_DIR}")
+            print(f"         Set ORACLE_CLOUD_CHAT_DIR to the cloud-chat-assistant project path")
+        else:
+            print(f"  [chat] Script not found: {CHAT_SCRIPT}")
+            print(f"         Is cloud-chat-assistant installed? Expected {CHAT_SCRIPT.name} in {CHAT_DIR}")
 
     # Mount speech backend
     if SPEECH_SCRIPT.exists():
@@ -460,7 +468,12 @@ async def start_proxy(app):
         except Exception as exc:
             print(f"  [speech] Failed to mount: {exc}")
     else:
-        print(f"  [speech] Not found: {SPEECH_SCRIPT}")
+        if not SPEECH_DIR.exists():
+            print(f"  [speech] Directory not found: {SPEECH_DIR}")
+            print(f"          Set ORACLE_SPEECH_DIR to the speech-to-cli project path")
+        else:
+            print(f"  [speech] Script not found: {SPEECH_SCRIPT}")
+            print(f"          Is speech-to-cli installed? Expected {SPEECH_SCRIPT.name} in {SPEECH_DIR}")
 
     # Connect in-process client to the proxy
     oracle_client = Client(oracle)
