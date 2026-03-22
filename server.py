@@ -55,6 +55,13 @@ BEDROCK_MODELS = {
     "nova-pro", "nova-lite", "nova-2-lite",
     "llama4-maverick-17b", "llama4-scout-17b", "palmyra-x4", "palmyra-x5",
 }
+PUTER_MODELS = {
+    "claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001",
+    "gpt-5.4-2026-03-05", "gpt-5.2-chat-latest", "o3", "o3-pro",
+    "deepseek-chat", "deepseek-reasoner",
+    "grok-4", "grok-4-fast",
+    "mistral-large-latest",
+}
 
 
 def _model_type(model):
@@ -64,6 +71,8 @@ def _model_type(model):
         return "google"
     if model in BEDROCK_MODELS:
         return "bedrock"
+    if model in PUTER_MODELS:
+        return "puter"
     return "deployed"
 
 
