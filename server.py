@@ -546,4 +546,5 @@ if __name__ == "__main__":
 """)
 
     app = create_app()
+    # Bind to all interfaces — intentional for LAN access from other homelab machines
     web.run_app(app, host="0.0.0.0", port=port, print=None)
