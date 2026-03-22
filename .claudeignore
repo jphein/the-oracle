@@ -1,4 +1,11 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+
+# Secrets
+.mcp.json
+
+# Tooling
 .playwright-mcp/
+.claude/
