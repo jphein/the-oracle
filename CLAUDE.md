@@ -1,3 +1,4 @@
+<!-- claude-md-version: a7d06d6 | updated: 2026-03-22 -->
 # The Oracle
 
 FastMCP proxy server + crystal ball web frontend. Bridges cloud-chat-assistant (multi-cloud LLM) and speech-to-cli (Azure STT/TTS) into a unified WebSocket interface.
