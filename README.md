@@ -85,3 +85,7 @@ This is an audio routing setting, not an interaction mode:
 - **Half duplex** (speakers): TTS must finish before the mic opens to avoid transcribing speaker output. Set automatically based on audio output device.
 
 The `half_duplex` config in `~/.config/speech-to-cli/config.json` controls this (`"auto"`, `"true"`, or `"false"`).
+
+## License
+
+AGPL-3.0-or-later © 2026 Jeffrey Pine Hein. See [LICENSE](LICENSE).
